@@ -15,23 +15,28 @@ namespace mam::wave_draw {
 static auto compute_buckets(const AudioBufferSpan& audio_buffer,
                             double num_samples_per_bucket) -> Buckets
 {
-    const auto spp = num_samples_per_bucket;
+    const auto sample_per_bucket = std::lround(num_samples_per_bucket);
 
     Buckets buckets;
-    auto max_sample        = SampleType(0.);
+
+    bool bucket_full       = false;
+    auto max_sample_value  = SampleType(0.);
     const auto num_samples = audio_buffer.size();
     for (size_t i = 0; i < num_samples; i++)
     {
-        max_sample       = std::max(max_sample, std::abs(audio_buffer[i]));
-        bool bucket_full = std::fmod(static_cast<double>(i + 1), spp) < 1.;
+        const auto abs_val = std::abs(audio_buffer[i]);
+        max_sample_value   = std::max(max_sample_value, abs_val);
+        bucket_full        = (i + 1) % sample_per_bucket == 0;
         if (bucket_full)
         {
-            buckets.push_back(max_sample);
-            max_sample = SampleType(0.);
+            buckets.push_back(max_sample_value);
+            max_sample_value = SampleType(0.);
         }
     }
 
-    buckets.push_back(max_sample);
+    // If there is a max_sample_value left, just put it into another bucket.
+    if (!bucket_full)
+        buckets.push_back(max_sample_value);
 
     return buckets;
 }
