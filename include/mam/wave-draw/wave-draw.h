@@ -1,0 +1,69 @@
+// Copyright(c) 2024 Max And Me.
+
+#pragma once
+
+#include "gsl/span"
+#include <cstdint>
+#include <functional>
+#include <vector>
+
+namespace mam::wave_draw {
+
+//------------------------------------------------------------------------
+using CoordType = double;
+struct DrawData
+{
+    CoordType x      = 0.;
+    CoordType y      = 0.;
+    CoordType width  = 0.;
+    CoordType height = 0.;
+};
+
+using SampleType      = float;
+using AudioBufferSpan = gsl::span<const SampleType>;
+using DrawFunc        = std::function<void(const DrawData&)>;
+using Buckets         = std::vector<float>;
+
+//------------------------------------------------------------------------
+// Drawer
+//------------------------------------------------------------------------
+class Drawer
+{
+public:
+    //--------------------------------------------------------------------
+    Drawer();
+
+    auto init(const AudioBufferSpan& audio_buffer, const double zoom_factor)
+        -> Drawer&;
+
+    auto setup_wave(const CoordType line_width, const CoordType spacing)
+        -> Drawer&;
+
+    auto setup_dimensions(const CoordType width, const CoordType height)
+        -> Drawer&;
+
+    auto draw(DrawFunc&& func) const -> void;
+
+    //--------------------------------------------------------------------
+private:
+    Buckets buckets;
+    CoordType line_width = 0.;
+    CoordType spacing    = 0.;
+    CoordType width      = 0.;
+    CoordType height     = 0.;
+};
+
+//------------------------------------------------------------------------
+// Calculate zoom factor from a given view width
+auto compute_zoom_factor(const AudioBufferSpan& audio_buffer,
+                         const CoordType view_width,
+                         const CoordType line_width,
+                         const CoordType spacing) -> double;
+
+// Calculate view width from a given zoom factor
+auto compute_view_width(const AudioBufferSpan& audio_buffer,
+                        const double zoom_factor,
+                        const CoordType line_width,
+                        const CoordType spacing) -> CoordType;
+//------------------------------------------------------------------------
+} // namespace mam::wave_draw
