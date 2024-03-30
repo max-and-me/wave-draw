@@ -15,7 +15,7 @@ namespace mam::wave_draw {
 static auto compute_buckets(const AudioBufferSpan& audio_buffer,
                             double num_samples_per_bucket) -> Buckets
 {
-    const auto sample_per_bucket = std::lround(num_samples_per_bucket);
+    const auto sample_per_bucket = static_cast<size_t>(num_samples_per_bucket);
 
     Buckets buckets;
 
