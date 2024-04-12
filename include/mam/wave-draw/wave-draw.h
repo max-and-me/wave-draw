@@ -21,7 +21,7 @@ struct DrawData
 
 using SampleType      = float;
 using AudioBufferSpan = gsl::span<const SampleType>;
-using DrawFunc        = std::function<void(const DrawData&)>;
+using DrawFunc        = std::function<void(const DrawData&, size_t)>;
 using Buckets         = std::vector<float>;
 
 //------------------------------------------------------------------------
@@ -33,14 +33,14 @@ public:
     //--------------------------------------------------------------------
     Drawer();
 
-    auto init(const AudioBufferSpan& audio_buffer, const double zoom_factor)
-        -> Drawer&;
+    auto init(const AudioBufferSpan& audio_buffer,
+              const double zoom_factor) -> Drawer&;
 
-    auto setup_wave(const CoordType line_width, const CoordType spacing)
-        -> Drawer&;
+    auto setup_wave(const CoordType line_width,
+                    const CoordType spacing) -> Drawer&;
 
-    auto setup_dimensions(const CoordType width, const CoordType height)
-        -> Drawer&;
+    auto setup_dimensions(const CoordType width,
+                          const CoordType height) -> Drawer&;
 
     auto draw(DrawFunc&& func) const -> void;
 

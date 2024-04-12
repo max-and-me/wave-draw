@@ -70,16 +70,16 @@ auto compute_view_width(const AudioBufferSpan& audio_buffer,
 Drawer::Drawer() {}
 
 //------------------------------------------------------------------------
-auto Drawer::init(const AudioBufferSpan& audio_buffer, const double zoom_factor)
-    -> Drawer&
+auto Drawer::init(const AudioBufferSpan& audio_buffer,
+                  const double zoom_factor) -> Drawer&
 {
     buckets = compute_buckets(audio_buffer, zoom_factor);
     return *this;
 }
 
 //------------------------------------------------------------------------
-auto Drawer::setup_dimensions(const CoordType width, const CoordType height)
-    -> Drawer&
+auto Drawer::setup_dimensions(const CoordType width,
+                              const CoordType height) -> Drawer&
 {
     this->width  = width;
     this->height = height;
@@ -87,8 +87,8 @@ auto Drawer::setup_dimensions(const CoordType width, const CoordType height)
 }
 
 //------------------------------------------------------------------------
-auto Drawer::setup_wave(const CoordType line_width, const CoordType spacing)
-    -> Drawer&
+auto Drawer::setup_wave(const CoordType line_width,
+                        const CoordType spacing) -> Drawer&
 {
     this->line_width = line_width;
     this->spacing    = spacing;
@@ -114,7 +114,7 @@ auto Drawer::draw(DrawFunc&& func) const -> void
         data.width  = line_width;
         data.height = line_height;
 
-        func(data);
+        func(data, i);
     }
 }
 
