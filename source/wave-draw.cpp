@@ -15,28 +15,31 @@ namespace mam::wave_draw {
 static auto compute_buckets(const AudioBufferSpan& audio_buffer,
                             double num_samples_per_bucket) -> Buckets
 {
-    const auto sample_per_bucket = static_cast<size_t>(num_samples_per_bucket);
+    const auto samples_per_bucket = static_cast<size_t>(num_samples_per_bucket);
+    const auto num_samples        = audio_buffer.size();
+    const auto num_buckets        = num_samples / samples_per_bucket;
+    constexpr size_t STEP_COUNT   = 16;
 
     Buckets buckets;
+    buckets.resize(num_buckets);
 
-    bool bucket_full       = false;
-    auto max_sample_value  = SampleType(0.);
-    const auto num_samples = audio_buffer.size();
-    for (size_t i = 0; i < num_samples; i++)
+    auto max_sample_value = SampleType(0.);
+
+    size_t sample_counter = 0;
+    for (auto bucket_index = 0; bucket_index < buckets.size(); bucket_index++)
     {
-        const auto abs_val = std::abs(audio_buffer[i]);
-        max_sample_value   = std::max(max_sample_value, abs_val);
-        bucket_full        = (i + 1) % sample_per_bucket == 0;
-        if (bucket_full)
+        const auto start_sample = bucket_index * samples_per_bucket;
+        const auto end_sample =
+            std::min(start_sample + samples_per_bucket, num_samples);
+        for (auto i = start_sample; i < end_sample; i += STEP_COUNT)
         {
-            buckets.push_back(max_sample_value);
-            max_sample_value = SampleType(0.);
+            const auto abs_val = std::abs(audio_buffer[i]);
+            max_sample_value   = std::max(max_sample_value, abs_val);
         }
-    }
 
-    // If there is a max_sample_value left, just put it into another bucket.
-    if (!bucket_full)
-        buckets.push_back(max_sample_value);
+        buckets[bucket_index] = max_sample_value;
+        max_sample_value      = SampleType(0.);
+    }
 
     return buckets;
 }
