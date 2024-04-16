@@ -12,36 +12,44 @@
 namespace mam::wave_draw {
 
 //------------------------------------------------------------------------
+// Maybe this can be set dynamically during runtime
+static constexpr size_t MIN_STEP_COUNT = 1;
+
+// Line should be at least two pixels in height
+static constexpr double MIN_LINE_HEIGHT = 2.;
+
+//------------------------------------------------------------------------
+template <typename Func>
 static auto compute_buckets(const AudioBufferSpan& audio_buffer,
-                            double num_samples_per_bucket) -> Buckets
+                            double num_samples_per_bucket,
+                            Func&& func) -> void
 {
     const auto samples_per_bucket = static_cast<size_t>(num_samples_per_bucket);
     const auto num_samples        = audio_buffer.size();
     const auto num_buckets        = num_samples / samples_per_bucket;
-    constexpr size_t STEP_COUNT   = 16;
 
-    Buckets buckets;
-    buckets.resize(num_buckets);
+    // The step count increases the bigger the buffer is. This preserves details
+    // when zoomed in but saves performance when buffer is very big. And 720 is
+    // a good value for now. The minimum step count is 1 of course.
+    const auto step_count = std::max(MIN_STEP_COUNT, samples_per_bucket / 720);
 
     auto max_sample_value = SampleType(0.);
 
-    size_t sample_counter = 0;
-    for (auto bucket_index = 0; bucket_index < buckets.size(); bucket_index++)
+    for (auto bucket_index = 0; bucket_index < num_buckets; bucket_index++)
     {
         const auto start_sample = bucket_index * samples_per_bucket;
         const auto end_sample =
             std::min(start_sample + samples_per_bucket, num_samples);
-        for (auto i = start_sample; i < end_sample; i += STEP_COUNT)
+        for (auto i = start_sample; i < end_sample; i += step_count)
         {
             const auto abs_val = std::abs(audio_buffer[i]);
             max_sample_value   = std::max(max_sample_value, abs_val);
         }
 
-        buckets[bucket_index] = max_sample_value;
-        max_sample_value      = SampleType(0.);
-    }
+        func(bucket_index, max_sample_value);
 
-    return buckets;
+        max_sample_value = SampleType(0.);
+    }
 }
 
 //------------------------------------------------------------------------
@@ -70,14 +78,10 @@ auto compute_view_width(const AudioBufferSpan& audio_buffer,
 //------------------------------------------------------------------------
 // Drawer
 //------------------------------------------------------------------------
-Drawer::Drawer() {}
-
-//------------------------------------------------------------------------
-auto Drawer::init(const AudioBufferSpan& audio_buffer,
-                  const double zoom_factor) -> Drawer&
+Drawer::Drawer(const AudioBufferSpan& audio_buffer, const double zoom_factor)
+: audio_buffer(audio_buffer)
+, zoom_factor(zoom_factor)
 {
-    buckets = compute_buckets(audio_buffer, zoom_factor);
-    return *this;
 }
 
 //------------------------------------------------------------------------
@@ -103,12 +107,10 @@ auto Drawer::draw(DrawFunc&& func) const -> void
 {
     const auto x_offset = line_width + spacing;
     const auto y_center = height * 0.5;
-    for (size_t i = 0; i < buckets.size(); ++i)
-    {
-        // Line should be at least two pixels in height
-        static const auto MIN_LINE_HEIGHT = 2.;
+
+    compute_buckets(audio_buffer, zoom_factor, [&](size_t i, double value) {
         const auto line_height =
-            std::max(height * CoordType(buckets[i]), MIN_LINE_HEIGHT);
+            std::max(height * CoordType(value), MIN_LINE_HEIGHT);
         const auto line_hight_half = line_height * 0.5;
 
         DrawData data;
@@ -118,7 +120,7 @@ auto Drawer::draw(DrawFunc&& func) const -> void
         data.height = line_height;
 
         func(data, i);
-    }
+    });
 }
 
 //------------------------------------------------------------------------

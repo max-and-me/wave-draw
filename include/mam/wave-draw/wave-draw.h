@@ -31,10 +31,8 @@ class Drawer
 {
 public:
     //--------------------------------------------------------------------
-    Drawer();
-
-    auto init(const AudioBufferSpan& audio_buffer,
-              const double zoom_factor) -> Drawer&;
+    Drawer(const AudioBufferSpan& audio_buffer,
+              const double zoom_factor);
 
     auto setup_wave(const CoordType line_width,
                     const CoordType spacing) -> Drawer&;
@@ -46,11 +44,13 @@ public:
 
     //--------------------------------------------------------------------
 private:
-    Buckets buckets;
     CoordType line_width = 0.;
     CoordType spacing    = 0.;
     CoordType width      = 0.;
     CoordType height     = 0.;
+
+    const AudioBufferSpan& audio_buffer;
+    const double zoom_factor = 0.;
 };
 
 //------------------------------------------------------------------------
