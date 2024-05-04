@@ -1,7 +1,5 @@
 // Copyright(c) 2024 Max And Me.
 
-#pragma once
-
 #include "mam/wave-draw/wave-draw.h"
 #include "gsl/span"
 #include <algorithm>
@@ -85,8 +83,8 @@ Drawer::Drawer(const AudioBufferSpan& audio_buffer, const double zoom_factor)
 }
 
 //------------------------------------------------------------------------
-auto Drawer::setup_dimensions(const CoordType width,
-                              const CoordType height) -> Drawer&
+auto Drawer::setup_dimensions(const CoordType width, const CoordType height)
+    -> Drawer&
 {
     this->width  = width;
     this->height = height;
@@ -94,8 +92,8 @@ auto Drawer::setup_dimensions(const CoordType width,
 }
 
 //------------------------------------------------------------------------
-auto Drawer::setup_wave(const CoordType line_width,
-                        const CoordType spacing) -> Drawer&
+auto Drawer::setup_wave(const CoordType line_width, const CoordType spacing)
+    -> Drawer&
 {
     this->line_width = line_width;
     this->spacing    = spacing;
