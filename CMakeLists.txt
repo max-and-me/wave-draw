@@ -22,10 +22,17 @@ target_link_libraries(wave-draw
         GSL
 )
 
-target_compile_features(wave-draw 
-    PRIVATE 
-        cxx_std_17
-)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_compile_features(wave-draw 
+        PUBLIC 
+            cxx_std_20
+    )
+else()
+    target_compile_features(wave-draw 
+        PUBLIC 
+            cxx_std_17
+    )
+endif()
 
 # executable
 add_executable(wave-draw-app
@@ -35,9 +42,4 @@ add_executable(wave-draw-app
 target_link_libraries(wave-draw-app
     PRIVATE
         wave-draw
-)
-
-target_compile_features(wave-draw-app
-    PRIVATE 
-        cxx_std_17
 )

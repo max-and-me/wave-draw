@@ -1,7 +1,6 @@
 // Copyright(c) 2024 Max And Me.
 
 #include "mam/wave-draw/wave-draw.h"
-#include "gsl/span"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>

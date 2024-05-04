@@ -2,9 +2,14 @@
 
 #pragma once
 
+#if __cplusplus >= 202002L
+#include <span>
+#else
 #include "gsl/span"
+#endif
 #include <cstdint>
 #include <functional>
+
 #include <vector>
 
 namespace mam::wave_draw {
@@ -19,10 +24,14 @@ struct DrawData
     CoordType height = 0.;
 };
 
-using SampleType      = float;
+using SampleType = float;
+#if __cplusplus >= 202002L
+using AudioBufferSpan = std::span<const SampleType>;
+#else
 using AudioBufferSpan = gsl::span<const SampleType>;
-using DrawFunc        = std::function<void(const DrawData&, size_t)>;
-using Buckets         = std::vector<float>;
+#endif
+using DrawFunc = std::function<void(const DrawData&, size_t)>;
+using Buckets  = std::vector<float>;
 
 //------------------------------------------------------------------------
 // Drawer
@@ -31,14 +40,13 @@ class Drawer
 {
 public:
     //--------------------------------------------------------------------
-    Drawer(const AudioBufferSpan& audio_buffer,
-              const double zoom_factor);
+    Drawer(const AudioBufferSpan& audio_buffer, const double zoom_factor);
 
-    auto setup_wave(const CoordType line_width,
-                    const CoordType spacing) -> Drawer&;
+    auto setup_wave(const CoordType line_width, const CoordType spacing)
+        -> Drawer&;
 
-    auto setup_dimensions(const CoordType width,
-                          const CoordType height) -> Drawer&;
+    auto setup_dimensions(const CoordType width, const CoordType height)
+        -> Drawer&;
 
     auto draw(DrawFunc&& func) const -> void;
 
